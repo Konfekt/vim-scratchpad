@@ -23,7 +23,7 @@ function! s:OpenScratchPad(ftype) abort
         exe scr_winnum . 'wincmd w'
       endif
     else
-      exe 'leftabove vsplit +buffer' . scr_bufnum
+      exe 'vsplit +buffer' . scr_bufnum
     endif
   endif
 endfunction
