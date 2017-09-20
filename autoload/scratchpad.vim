@@ -23,8 +23,18 @@ function! s:OpenScratchPad(ftype) abort
         exe scr_winnum . 'wincmd w'
       endif
     else
-      exe 'vsplit +buffer' . scr_bufnum
+      exe s:SplitWindow() . ' +buffer' . scr_bufnum
     endif
+  endif
+endfunction
+
+function! s:SplitWindow()
+  let height = winheight(0) * 5
+  let width = winwidth(0) * 2
+  if (height > width)
+    return 'split'
+  else
+    return 'vsplit'
   endif
 endfunction
 
