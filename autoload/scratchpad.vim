@@ -4,7 +4,7 @@ function! s:OpenScratchPad(ftype) abort
 
   if scr_bufnum == -1
     " open the scratchpad
-    exe 'vnew ' . scratchpad_name
+    exe s:SplitWindow() . 'new ' . scratchpad_name
 
     nnoremap <buffer> <Plug>(ToggleScratchPad) :<c-u>bdelete<CR>
 
@@ -23,7 +23,7 @@ function! s:OpenScratchPad(ftype) abort
         exe scr_winnum . 'wincmd w'
       endif
     else
-      exe s:SplitWindow() . ' +buffer' . scr_bufnum
+      exe s:SplitWindow() . 'split +buffer' . scr_bufnum
     endif
   endif
 endfunction
@@ -32,9 +32,9 @@ function! s:SplitWindow()
   let height = winheight(0) * 5
   let width = winwidth(0) * 2
   if (height > width)
-    return 'split'
+    return ''
   else
-    return 'vsplit'
+    return 'v'
   endif
 endfunction
 
