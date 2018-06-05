@@ -36,7 +36,8 @@ endif
 
 augroup scratchpad
   autocmd!
-  execute 'autocmd BufNewFile,BufRead '. g:scratchpad_path . '/scratchpad.* setlocal bufhidden=hide buflisted noswapfile'
+  execute 'autocmd BufNewFile,BufRead '. g:scratchpad_path . '/scratchpad.* setlocal bufhidden=hide nobuflisted noswapfile'
+  execute 'autocmd BufLeave ' . g:scratchpad_path . '/scratchpad.* update'
 augroup END
 
 " ------------------------------------------------------------------------------
