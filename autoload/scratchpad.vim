@@ -1,17 +1,23 @@
+" slash adapted to the OS
+let s:slash = (exists('+shellslash') && !&shellslash ? '\' : '/')
+
 function! s:OpenScratchPad(ftype) abort
-  let scratchpad_name = g:scratchpad_path . '/scratchpad.' . a:ftype
-  let scr_bufnum = bufnr(scratchpad_name)
+  let cwd= getcwd()
+  let scratchpad_dir =
+        \ ((g:scratchpad_path =~# '^' . escape(s:slash, '\')) ?
+        \ '' : cwd . s:slash) . g:scratchpad_path
+  let scratchpad_path = scratchpad_dir . s:slash . 'scratchpad.' . a:ftype
+  let scr_bufnum = bufnr(scratchpad_path)
 
   if scr_bufnum == -1
+    if !isdirectory(scratchpad_dir)
+      call mkdir(scratchpad_dir)
+    endif
     " open the scratchpad
-    exe s:SplitWindow() . 'new ' . scratchpad_name
+    exe s:SplitWindow() . 'new ' . scratchpad_path
+    exe 'lchdir ' . cwd
 
     nnoremap <buffer> <Plug>(ToggleScratchPad) :<c-u>bdelete<CR>
-
-    let dir = expand('%:p:h')
-    if !isdirectory(dir)
-      call mkdir(dir)
-    endif
   else
     " Scratch buffer is already created. Check whether it is open
     " in one of the windows
