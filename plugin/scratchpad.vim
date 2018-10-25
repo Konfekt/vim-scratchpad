@@ -24,7 +24,8 @@ let s:keepcpo         = &cpo
 set cpo&vim
 " ------------------------------------------------------------------------------
 
-nnoremap <silent> <Plug>(ToggleScratchPad) :<c-u>call scratchpad#ToggleScratchPad(&l:filetype)<CR>
+nnoremap <silent> <Plug>(ToggleScratchPad)
+      \ :<c-u>call scratchpad#ToggleScratchPad(empty(g:scratchpad_ftype)? &l:filetype : g:scratchpad_ftype)<CR>
 
 if empty(maparg('dsp','n')) && !hasmapto('<Plug>(ToggleScratchPad)', 'n')
     silent! nmap dsp <Plug>(ToggleScratchPad)
@@ -33,13 +34,16 @@ endif
 if !(exists('g:scratchpad_path'))
   let g:scratchpad_path = '.scratchpads'
 endif
+if !(exists('g:scratchpad_ftype'))
+  let g:scratchpad_ftype = 'text'
+endif
 
 " slash adapted to the OS
 let s:slash = (exists('+shellslash') && !&shellslash ? '\' : '/')
 " remove trailing slash
 let g:scratchpad_path = substitute(g:scratchpad_path, s:slash . '$', '', '')
 " check whether it is absolute path
-let s:path_pattern = 
+let s:path_pattern =
       \ ((g:scratchpad_path =~# '^' . escape(s:slash, '\')) ?
       \ '' : '*' . s:slash) .
       \ g:scratchpad_path . s:slash
