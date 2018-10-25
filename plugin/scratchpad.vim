@@ -35,7 +35,7 @@ if !(exists('g:scratchpad_path'))
   let g:scratchpad_path = '.scratchpads'
 endif
 if !(exists('g:scratchpad_ftype'))
-  let g:scratchpad_ftype = 'text'
+  let g:scratchpad_ftype = ''
 endif
 
 " slash adapted to the OS
