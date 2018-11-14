@@ -1,12 +1,12 @@
 " slash adapted to the OS
 let s:slash = (exists('+shellslash') && !&shellslash ? '\' : '/')
 
-function! s:OpenScratchPad(ftype) abort
+function! s:OpenScratchPad(ftype, extension) abort
   let cwd= getcwd()
   let scratchpad_dir =
         \ ((g:scratchpad_path =~# '^' . escape(s:slash, '\')) ?
         \ '' : cwd . s:slash) . g:scratchpad_path
-  let scratchpad_path = scratchpad_dir . s:slash . 'scratchpad.' . a:ftype
+  let scratchpad_path = scratchpad_dir . s:slash . 'scratchpad.' . a:extension
   let scr_bufnum = bufnr(scratchpad_path)
 
   if scr_bufnum == -1
@@ -15,6 +15,7 @@ function! s:OpenScratchPad(ftype) abort
     endif
     " open the scratchpad
     exe s:SplitWindow() . 'new ' . scratchpad_path
+    let &l:filetype = a:ftype
     exe 'lchdir ' . cwd
 
     nnoremap <buffer> <Plug>(ToggleScratchPad) :<c-u>bdelete<CR>
@@ -58,27 +59,24 @@ function! scratchpad#ToggleScratchPad(ftype) abort
   " guess ftype if buffer had no file extension
   if !empty(a:ftype)
     let ftype = a:ftype
+    let extension = ftype
   else
-    let pads = split(globpath(g:scratchpad_path, 'scratchpad.*'), '\n')
-    if len(pads) > 0
-      let ftype = matchstr(pads[0], '\vscratchpad\.\zs(.+)$')
-    else
-      let ftype = expand('%:e')
-    endif
+    let ftype = &l:filetype
+    let extension = expand('%:e')
   endif
 
   if empty(ftype)
     let ftype = input('Enter filetype or leave empty to cancel. Scratchpad filetype: ', 'text', 'filetype')
+    let extension = ftype
   endif
   if empty(ftype)
     echoerr 'No filetype given. Scratchpad cancelled.'
     return
   endif
-  let &filetype = ftype
 
   let NumberOfScratchPadWindows = 0
   windo let NumberOfScratchPadWindows += s:KilledScratchPad(ftype)
   if NumberOfScratchPadWindows == 0
-    call s:OpenScratchPad(ftype)
+    call s:OpenScratchPad(ftype, extension)
   endif
 endfunction

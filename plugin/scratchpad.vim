@@ -25,7 +25,7 @@ set cpo&vim
 " ------------------------------------------------------------------------------
 
 nnoremap <silent> <Plug>(ToggleScratchPad)
-      \ :<c-u>call scratchpad#ToggleScratchPad(empty(g:scratchpad_ftype)? &l:filetype : g:scratchpad_ftype)<CR>
+      \ :<c-u>call scratchpad#ToggleScratchPad(!empty(g:scratchpad_ftype)? g:scratchpad_ftype : '')<CR>
 
 if empty(maparg('dsp','n')) && !hasmapto('<Plug>(ToggleScratchPad)', 'n')
     silent! nmap dsp <Plug>(ToggleScratchPad)
