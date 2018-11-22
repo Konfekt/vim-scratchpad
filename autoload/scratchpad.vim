@@ -63,6 +63,9 @@ function! scratchpad#ToggleScratchPad(ftype) abort
   else
     let ftype = &l:filetype
     let extension = expand('%:e')
+    if empty(extension)
+      let extension = ftype
+    endif
   endif
 
   if empty(ftype)
