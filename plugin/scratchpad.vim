@@ -25,7 +25,7 @@ set cpo&vim
 " ------------------------------------------------------------------------------
 
 nnoremap <silent> <Plug>(ToggleScratchPad)
-      \ :<c-u>call scratchpad#ToggleScratchPad(!empty(g:scratchpad_ftype)? g:scratchpad_ftype : '')<CR>
+      \ :<c-u>call scratchpad#ToggleScratchPad(g:scratchpad_ftype)<CR>
 
 if empty(maparg('dsp','n')) && !hasmapto('<Plug>(ToggleScratchPad)', 'n')
     silent! nmap dsp <Plug>(ToggleScratchPad)
@@ -39,7 +39,7 @@ if !(exists('g:scratchpad_ftype'))
 endif
 
 " slash adapted to the OS
-let s:slash = (exists('+shellslash') && !&shellslash ? '\' : '/')
+let s:slash = exists('+shellslash') && !&shellslash ? '\' : '/'
 " remove trailing slash
 let g:scratchpad_path = substitute(g:scratchpad_path, s:slash . '$', '', '')
 " check whether it is absolute path
