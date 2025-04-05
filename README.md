@@ -1,7 +1,8 @@
 *Vim-ScratchPad*
 ================
 
-This plug-in adds a key binding, by default `dsp` (= `Display Scratch Pad`), that toggles a scratchpad.
+This plug-in adds a key binding, by default `dsp` (= `Display Scratch Pad`), that [toggles a scratchpad](https://i.imgur.com/kpsjzD7.gif).
+
 By default, it assumes the filetype `FT` and working directory `CWD` of the currently active buffer, and is stored in `CWD/.scratchpads/scratchpad.FT`.
 
 The directory where the scratchpad is stored in is set by the variable

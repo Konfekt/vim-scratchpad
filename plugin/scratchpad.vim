@@ -41,17 +41,16 @@ endif
 " slash adapted to the OS
 let s:slash = exists('+shellslash') && !&shellslash ? '\' : '/'
 " remove trailing slash
-let g:scratchpad_path = substitute(g:scratchpad_path, s:slash . '$', '', '')
+let g:scratchpad_path = substitute(g:scratchpad_path, escape(s:slash, '\')..'$', '', '')
 " check whether it is absolute path
 let s:path_pattern =
-      \ ((g:scratchpad_path =~# '^' . escape(s:slash, '\')) ?
-      \ '' : '*' . s:slash) .
-      \ g:scratchpad_path . s:slash
+      \ ((g:scratchpad_path =~# fnamemodify(g:scratchpad_path, ':p')) ? '' : '*'..s:slash) ..
+      \ g:scratchpad_path..s:slash
 
 augroup scratchpad
   autocmd!
-  execute 'autocmd BufNewFile,BufRead ' . s:path_pattern . 'scratchpad.* setlocal bufhidden=hide nobuflisted noswapfile'
-  execute 'autocmd BufLeave ' . s:path_pattern . 'scratchpad.* update'
+  execute 'autocmd BufNewFile,BufRead ' s:path_pattern 'scratchpad.* setlocal bufhidden=hide nobuflisted noswapfile'
+  execute 'autocmd BufLeave' s:path_pattern..'scratchpad.*' 'update'
 augroup END
 
 unlet s:path_pattern
