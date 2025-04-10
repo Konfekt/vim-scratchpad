@@ -26,12 +26,6 @@ The key binding is set by the mapping
 ## Installation
 Add one of the following to your `.vimrc`, according to your plugin manager:
 
-#### Vim's built-in plugin manager (pack)
-```vim
-    mkdir -p ~/.vim/pack/plugins/start
-    git clone https://github.com/konfekt/vim-scratchpad.git ~/.vim/pack/plugins/start/vim-scratchpad
-```
-
 #### Vim Plug
 ```vim
     Plug 'konfekt/vim-scratchpad'
@@ -40,4 +34,11 @@ Add one of the following to your `.vimrc`, according to your plugin manager:
 #### Vundle
 ```vim
     Plugin 'konfekt/vim-scratchpad'
+```
+
+...Or use vim's native plugin manager:
+#### Vim Packages
+```vim
+    mkdir -p ~/.vim/pack/plugins/start
+    git clone https://github.com/konfekt/vim-scratchpad.git ~/.vim/pack/plugins/start/vim-scratchpad
 ```
