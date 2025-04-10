@@ -22,3 +22,22 @@ The key binding is set by the mapping
 ```vim
     nmap dsp <Plug>(ToggleScratchPad)
 ```
+
+## Installation
+Add one of the following to your `.vimrc`, according to your plugin manager:
+
+#### Vim's built-in plugin manager (pack)
+```vim
+    mkdir -p ~/.vim/pack/plugins/start
+    git clone https://github.com/konfekt/vim-scratchpad.git ~/.vim/pack/plugins/start/vim-scratchpad
+```
+
+#### Vim Plug
+```vim
+    Plug 'konfekt/vim-scratchpad'
+```
+
+#### Vundle
+```vim
+    Plugin 'konfekt/vim-scratchpad'
+```
