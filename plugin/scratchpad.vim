@@ -44,7 +44,7 @@ let s:slash = exists('+shellslash') && !&shellslash ? '\' : '/'
 let g:scratchpad_path = substitute(g:scratchpad_path, escape(s:slash, '\')..'$', '', '')
 " check whether it is absolute path
 let s:path_pattern =
-      \ ((g:scratchpad_path =~# fnamemodify(g:scratchpad_path, ':p')) ? '' : '*'..s:slash) ..
+      \ ((g:scratchpad_path ==# fnamemodify(g:scratchpad_path, ':p')) ? '' : '*'..s:slash) ..
       \ g:scratchpad_path..s:slash
 
 augroup scratchpad
