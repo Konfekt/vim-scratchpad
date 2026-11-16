@@ -1,12 +1,28 @@
 " slash adapted to the OS
-let s:slash = (exists('+shellslash') && !&shellslash ? '\' : '/')
+let s:slash = exists('+shellslash') && !&shellslash ? '\' : '/'
+
+" g:scratchpad_path with a leading ~ expanded and trailing slashes removed.
+function! scratchpad#Path() abort
+  let path = g:scratchpad_path
+  if path =~# '^\~\%([\\/]\|$\)'
+    let path = fnamemodify(path, ':p')
+  endif
+  return substitute(path, '.\zs[\\/]\+$', '', '')
+endfunction
+
+function! scratchpad#IsAbsolute(path) abort
+  return a:path =~# '^\%([\\/]\|\a:[\\/]\)'
+endfunction
+
+function! s:SplitWindow() abort
+  return winheight(0) * 5 > winwidth(0) * 2 ? 'aboveleft' : 'topleft vertical'
+endfunction
 
 function! s:OpenScratchPad(ftype, extension) abort
   let cwd = getcwd()
-  let scratchpad_dir =
-        \ ((g:scratchpad_path =~# fnamemodify(g:scratchpad_path, ':p')) ? '' : cwd..s:slash)..
-        \  g:scratchpad_path
-  let scratchpad_path = scratchpad_dir..s:slash..'scratchpad.'..a:extension
+  let path = scratchpad#Path()
+  let scratchpad_dir = scratchpad#IsAbsolute(path) ? path : cwd .. s:slash .. path
+  let scratchpad_path = scratchpad_dir .. s:slash .. 'scratchpad.' .. a:extension
   let scr_bufnum = bufnr(scratchpad_path)
 
   if scr_bufnum == -1
@@ -20,39 +36,24 @@ function! s:OpenScratchPad(ftype, extension) abort
 
     nnoremap <silent><buffer> <Plug>(ToggleScratchPad) :<C-U>update<bar>bdelete<CR>
   else
-    " Scratch buffer is already created. Check whether it is open
-    " in one of the windows
-    let scr_winnum = bufwinnr(scr_bufnum)
-    if scr_winnum != -1
-      " Jump to the window displaying the scratchpad if not already there.
-      if winnr() != scr_winnum
-        exe scr_winnum..'wincmd w'
-      endif
+    " Scratch buffer is already created. Jump to the window displaying it,
+    " or open it in a new one.
+    let scr_winid = bufwinid(scr_bufnum)
+    if scr_winid != -1
+      call win_gotoid(scr_winid)
     else
-      exe s:SplitWindow() 'split +buffer'..scr_bufnum
+      exe s:SplitWindow() 'split +buffer' .. scr_bufnum
     endif
   endif
 endfunction
 
-function! s:SplitWindow()
-  let height = winheight(0) * 5
-  let width = winwidth(0) * 2
-  if height > width
-    return 'aboveleft '
-  else
-    return 'topleft vertical'
-  endif
-endfunction
-
-function! s:KilledScratchPad(ftype) abort
-  let escaped_scratchpad_path = '\V'..escape(g:scratchpad_path, '\')
-  if expand('%:p') =~? '\v.*[\\/]'..escaped_scratchpad_path..'\v[\\/]scratchpad\.\f+$' && &l:filetype is? a:ftype
-    update
-    bdelete
-    return 1
-  else
-    return 0
-  endif
+" Whether buffer {bufnr} is a scratchpad of filetype {ftype}.
+function! s:IsScratchPad(bufnr, ftype) abort
+  let path = scratchpad#Path()
+  let pattern = '\V' .. (scratchpad#IsAbsolute(path) ? '\^' : '\[\\/]') ..
+        \ escape(path, '\') .. '\[\\/]scratchpad.\f\+\$'
+  return fnamemodify(bufname(a:bufnr), ':p') =~? pattern
+        \ && getbufvar(a:bufnr, '&filetype') ==? a:ftype
 endfunction
 
 function! scratchpad#ToggleScratchPad(ftype) abort
@@ -77,9 +78,14 @@ function! scratchpad#ToggleScratchPad(ftype) abort
     return
   endif
 
-  let NumberOfScratchPadWindows = 0
-  windo let NumberOfScratchPadWindows += s:KilledScratchPad(ftype)
-  if NumberOfScratchPadWindows == 0
+  " Close all visible scratchpads of this filetype, saving them first;
+  " open one if there were none.
+  let scratchpads = filter(uniq(sort(tabpagebuflist(), 'n')), 's:IsScratchPad(v:val, ftype)')
+  for bufnr in scratchpads
+    call win_execute(bufwinid(bufnr), 'update')
+    execute 'bdelete' bufnr
+  endfor
+  if empty(scratchpads)
     call s:OpenScratchPad(ftype, extension)
   endif
 endfunction

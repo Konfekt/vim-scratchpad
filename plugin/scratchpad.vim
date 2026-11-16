@@ -20,8 +20,8 @@ if exists('g:loaded_scratchpad')
 endif
 let g:loaded_scratchpad = 1
 
-let s:keepcpo         = &cpo
-set cpo&vim
+let s:keepcpo         = &cpoptions
+set cpoptions&vim
 " ------------------------------------------------------------------------------
 
 nnoremap <silent> <Plug>(ToggleScratchPad)
@@ -38,24 +38,19 @@ if !(exists('g:scratchpad_ftype'))
   let g:scratchpad_ftype = ''
 endif
 
-" slash adapted to the OS
-let s:slash = exists('+shellslash') && !&shellslash ? '\' : '/'
-" remove trailing slash
-let g:scratchpad_path = substitute(g:scratchpad_path, escape(s:slash, '\')..'$', '', '')
-" check whether it is absolute path
-let s:path_pattern =
-      \ ((g:scratchpad_path ==# fnamemodify(g:scratchpad_path, ':p')) ? '' : '*'..s:slash) ..
-      \ g:scratchpad_path..s:slash
+let s:path = scratchpad#Path()
+" match the scratchpad directory anywhere if it is relative
+let s:path_pattern = (scratchpad#IsAbsolute(s:path) ? '' : '*/') ..
+      \ escape(s:path, ' ,') .. '/scratchpad.*'
 
 augroup scratchpad
   autocmd!
-  execute 'autocmd BufNewFile,BufRead ' s:path_pattern 'scratchpad.* setlocal bufhidden=hide nobuflisted noswapfile'
-  execute 'autocmd BufLeave' s:path_pattern..'scratchpad.*' 'update'
+  execute 'autocmd BufNewFile,BufRead' s:path_pattern 'setlocal bufhidden=hide nobuflisted noswapfile'
+  execute 'autocmd BufLeave' s:path_pattern 'update'
 augroup END
 
-unlet s:path_pattern
-unlet s:slash
+unlet s:path s:path_pattern
 
 " ------------------------------------------------------------------------------
-let &cpo= s:keepcpo
+let &cpoptions= s:keepcpo
 unlet s:keepcpo
