@@ -11,6 +11,7 @@ The directory where the scratchpad is stored in is set by the variable
 ```
 It may be an absolute or relative path.
 If it is a relative path (such as, by default `.scratchpads`), then it is relative to the working directory of the currently active window.
+A leading `~` stands for the home directory.
 
 The filetype of the scratchpad is set by the variable
 ```vim
@@ -22,6 +23,7 @@ The key binding is set by the mapping
 ```vim
     nmap dsp <Plug>(ToggleScratchPad)
 ```
+It is only added if `dsp` is still free and `<Plug>(ToggleScratchPad)` is not mapped yet.
 
 ## Installation
 Add one of the following to your `.vimrc`, according to your plugin manager:
