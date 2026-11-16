@@ -2,7 +2,7 @@
 let s:slash = exists('+shellslash') && !&shellslash ? '\' : '/'
 
 " g:scratchpad_path with a leading ~ expanded and trailing slashes removed.
-function! scratchpad#Path() abort
+function! s:Path() abort
   let path = g:scratchpad_path
   if path =~# '^\~\%([\\/]\|$\)'
     let path = fnamemodify(path, ':p')
@@ -10,7 +10,7 @@ function! scratchpad#Path() abort
   return substitute(path, '.\zs[\\/]\+$', '', '')
 endfunction
 
-function! scratchpad#IsAbsolute(path) abort
+function! s:IsAbsolute(path) abort
   return a:path =~# '^\%([\\/]\|\a:[\\/]\)'
 endfunction
 
@@ -18,39 +18,52 @@ function! s:SplitWindow() abort
   return winheight(0) * 5 > winwidth(0) * 2 ? 'aboveleft' : 'topleft vertical'
 endfunction
 
+" Number of the buffer named {path}, or -1. Unlike bufnr({path}), this never
+" matches a buffer whose name merely contains {path}.
+function! s:BufNr(path) abort
+  let path = fnamemodify(a:path, ':p')
+  for buf in getbufinfo()
+    if buf.name ==# path
+      return buf.bufnr
+    endif
+  endfor
+  return -1
+endfunction
+
 function! s:OpenScratchPad(ftype, extension) abort
   let cwd = getcwd()
-  let path = scratchpad#Path()
-  let scratchpad_dir = scratchpad#IsAbsolute(path) ? path : cwd .. s:slash .. path
+  let path = s:Path()
+  let scratchpad_dir = s:IsAbsolute(path) ? path : cwd .. s:slash .. path
   let scratchpad_path = scratchpad_dir .. s:slash .. 'scratchpad.' .. a:extension
-  let scr_bufnum = bufnr(scratchpad_path)
+  let scr_bufnum = s:BufNr(scratchpad_path)
 
-  if scr_bufnum == -1
-    if !isdirectory(scratchpad_dir)
-      call mkdir(scratchpad_dir, 'p')
-    endif
-    " open the scratchpad
-    exe s:SplitWindow() 'new' fnameescape(scratchpad_path)
-    let &l:filetype = a:ftype
-    exe 'lchdir' fnameescape(cwd)
-
-    nnoremap <silent><buffer> <Plug>(ToggleScratchPad) :<C-U>update<bar>bdelete<CR>
+  " Jump to the window displaying the scratchpad, or open it in a new one.
+  if scr_bufnum != -1 && bufwinid(scr_bufnum) != -1
+    call win_gotoid(bufwinid(scr_bufnum))
   else
-    " Scratch buffer is already created. Jump to the window displaying it,
-    " or open it in a new one.
-    let scr_winid = bufwinid(scr_bufnum)
-    if scr_winid != -1
-      call win_gotoid(scr_winid)
+    if scr_bufnum == -1
+      if !isdirectory(scratchpad_dir)
+        call mkdir(scratchpad_dir, 'p')
+      endif
+      exe s:SplitWindow() 'new' fnameescape(scratchpad_path)
     else
       exe s:SplitWindow() 'split +buffer' .. scr_bufnum
     endif
+    exe 'lchdir' fnameescape(cwd)
   endif
+
+  " :bdelete clears the filetype and buffer-local mappings, so (re)set them
+  " each time; the extension alone may not imply the filetype.
+  if &l:filetype !=# a:ftype
+    let &l:filetype = a:ftype
+  endif
+  nnoremap <silent><buffer> <Plug>(ToggleScratchPad) :<C-U>update<bar>bdelete<CR>
 endfunction
 
 " Whether buffer {bufnr} is a scratchpad of filetype {ftype}.
 function! s:IsScratchPad(bufnr, ftype) abort
-  let path = scratchpad#Path()
-  let pattern = '\V' .. (scratchpad#IsAbsolute(path) ? '\^' : '\[\\/]') ..
+  let path = s:Path()
+  let pattern = '\V' .. (s:IsAbsolute(path) ? '\^' : '\[\\/]') ..
         \ escape(path, '\') .. '\[\\/]scratchpad.\f\+\$'
   return fnamemodify(bufname(a:bufnr), ':p') =~? pattern
         \ && getbufvar(a:bufnr, '&filetype') ==? a:ftype
