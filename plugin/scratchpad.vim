@@ -38,9 +38,15 @@ if !(exists('g:scratchpad_ftype'))
   let g:scratchpad_ftype = ''
 endif
 
-let s:path = scratchpad#Path()
+" g:scratchpad_path with a leading ~ expanded and trailing slashes removed
+" (as in autoload/scratchpad.vim, duplicated to keep startup from loading it).
+let s:path = g:scratchpad_path
+if s:path =~# '^\~\%([\\/]\|$\)'
+  let s:path = fnamemodify(s:path, ':p')
+endif
+let s:path = substitute(s:path, '.\zs[\\/]\+$', '', '')
 " match the scratchpad directory anywhere if it is relative
-let s:path_pattern = (scratchpad#IsAbsolute(s:path) ? '' : '*/') ..
+let s:path_pattern = (s:path =~# '^\%([\\/]\|\a:[\\/]\)' ? '' : '*/') ..
       \ escape(s:path, ' ,') .. '/scratchpad.*'
 
 augroup scratchpad
